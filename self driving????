@@ -1,4 +1,4 @@
-#pt.2 of making my audi a7 drive itself
+#pt.2 of making my audi a7 crash itself
 import os
 import numpy as np
 import cv2
@@ -6,14 +6,12 @@ from tensorflow import keras
 from PIL import Image
 
 path = os.chdir(r'C:\Users\mrcam\Documents\Self Driving')
-
 model = keras.models.load_model('model.h5')
 
 class Lanes():
     def __init__(self):
         self.recent_fit = []
         self.avg_fit = []
-
 
 def road_lines(image):
     image = image.astype(np.uint8)
@@ -23,22 +21,17 @@ def road_lines(image):
     small_img = small_img[None,:,:,:]
 
     prediction = model.predict(small_img)[0] * 255
-
     lanes.recent_fit.append(prediction)
 
     if len(lanes.recent_fit) > 5:
         lanes.recent_fit = lanes.recent_fit[1:]
 
     lanes.avg_fit = np.mean(np.array([i for i in lanes.recent_fit]), axis=0)
-
     blanks = np.zeros_like(lanes.avg_fit).astype(np.uint8)
     lane_drawn = np.dstack((blanks, lanes.avg_fit, blanks))
-
     lane_image = Image.fromarray(lane_drawn.astype(np.uint8)).resize((image.shape[1], image.shape[0]))
     lane_image = np.array(lane_image).astype(image.dtype)
-
     result = cv2.addWeighted(image, 1, lane_image, 1, 0)
-
     return result
 
 cap = cv2.VideoCapture(0)
@@ -51,11 +44,8 @@ if not cap.isOpened():
 
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
 vid_output = 'output_video.mp4'
-
 lanes = Lanes()
-
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(vid_output, fourcc, 30.0, (width, height))
 
@@ -65,22 +55,14 @@ while True:
     if not ret:
         print("your camera doesnt work")
         break
-
     processed_frame = road_lines(frame)
-
     cv2.imshow('Camera Feed', processed_frame)
-
     out.write(processed_frame)
-
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 cap.release()
 out.release()
-
 cv2.destroyAllWindows()
 
-
 # audi a7 more like 
-
-
